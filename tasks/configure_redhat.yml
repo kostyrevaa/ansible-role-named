@@ -7,7 +7,7 @@
     group={{ named_group }}
     mode={{ named_config_mode | default("0600") }}
   when: ansible_os_family == "RedHat"
-  notify: Stop named - RedHat
+  notify: restart bind
 
 - name: Create included.conf File - RedHat
   template:
@@ -17,7 +17,7 @@
     group={{ named_group }}
     mode={{ named_config_mode | default("0600") }}
   when: ansible_os_family == "RedHat"
-  notify: Stop named - RedHat
+  notify: restart bind
 
 - name: Create zone Files - RedHat
   template:
@@ -28,4 +28,55 @@
     mode={{ named_config_mode | default("0600") }}
   with_dict: named_zones
   when: named_zones_create_masters and ansible_os_family == "RedHat"
-  notify: Stop named - RedHat
+  notify: reload bind
+
+- name: Create dynamic zone Files - RedHat
+  template:
+    src='zone.j2'
+    dest={{ named_conf_directory }}/dynamic/{{ item.key | regex_replace('_', '.') }}.zone
+    owner={{ named_user }}
+    group={{ named_group }}
+    mode={{ named_config_mode | default("0600") }}
+  with_dict: named_dynamic_zones | default({})
+  when: named_zones_create_masters and ansible_os_family == "RedHat"
+  notify: reload bind
+
+- name: Create dynamic reverse lookup zone files - RedHat
+  template:
+    src='reverse_zone.j2'
+    dest={{ named_conf_directory }}/dynamic/{{ item.key|reverse_lookup_zone }}
+    owner={{ named_user }}
+    group={{ named_group }}
+    mode={{ named_config_mode | default("0600") }}
+  with_dict: bind_dynamic_reverse_zones | default({})
+  when: named_zones_create_masters and ansible_os_family == "RedHat"
+  notify: reload bind
+  tags:
+    - reverse
+
+- name: Create reverse lookup zone files - RedHat
+  template:
+    src='reverse_zone.j2'
+    dest={{ named_conf_directory }}/masters/{{ item.key|reverse_lookup_zone }}
+    owner={{ named_user }}
+    group={{ named_group }}
+    mode={{ named_config_mode | default("0600") }}
+  with_dict: bind_reverse_zones | default({})
+  when: named_zones_create_masters and ansible_os_family == "RedHat"
+  notify: reload bind
+  tags:
+    - reverse
+
+- name: Create rndc key
+  shell: "/usr/sbin/rndc-confgen -r /dev/urandom -a -c /etc/rndc.key"
+  args:
+    creates: /etc/rndc.key
+  when: named_create_rnd_key
+
+- name: Set perms on rndc key
+  file: path=/etc/rndc.key owner={{ named_user }} group={{ named_group }} mode=0640
+  when: named_create_rnd_key
+
+
+- name: start bind
+  service: name={{ bind_service_name }} state=started enabled=yes

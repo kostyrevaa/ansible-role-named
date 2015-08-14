@@ -1,28 +1,4 @@
 ---
-- name: Create log Directory
-  file:
-    path={{ named_conf_logging_file_directory }}
-    owner={{ named_user }}
-    group={{ named_group }}
-    mode={{ named_conf_logging_directory_perms | default("750") }}
-    state='directory'
-  tags: install
-
-- name: Create includes Directory
-  file:
-    path={{ named_conf_includes_directory }}
-    owner={{ named_user }}
-    group={{ named_group }}
-    state='directory'
-  tags: install
-
-- name: Create zone masters Directory
-  file:
-    path={{ named_conf_directory }}/masters
-    owner={{ named_user }}
-    group={{ named_group }}
-    state='directory'
-  tags: install
 
 - name: Create User Group
   group:
@@ -41,4 +17,41 @@
     shell='/sbin/nologin'
     system='yes'
   when: named_travis_ci is not defined
+  tags: install
+
+- name: Create log Directory
+  file:
+    path={{ named_conf_logging_file_directory }}
+    owner={{ named_user }}
+    group={{ named_group }}
+    mode={{ named_conf_logging_directory_perms | default("750") }}
+    state='directory'
+    setype=named_log_t
+  tags: install
+
+- name: Reset selinux permissions
+  file:
+    path={{ named_conf_logging_file_directory }}/{{ named_conf_logging_file }}
+    owner={{ named_user }}
+    group={{ named_group }}
+    mode={{ named_conf_logging_directory_perms | default("660") }}
+    setype=named_log_t
+  when: ansible_selinux.mode == 'enforcing'
+  tags: install
+
+
+- name: Create includes Directory
+  file:
+    path={{ named_conf_includes_directory }}
+    owner={{ named_user }}
+    group={{ named_group }}
+    state='directory'
+  tags: install
+
+- name: Create zone masters Directory
+  file:
+    path={{ named_conf_directory }}/masters
+    owner={{ named_user }}
+    group={{ named_group }}
+    state='directory'
   tags: install

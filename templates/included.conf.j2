@@ -27,17 +27,18 @@ zone "{{ key | regex_replace('_', '.') }}" {
 {% if value.type == 'master' %}
     file "/var/named/masters/{{ key | regex_replace('_', '.') }}.zone";
     allow-update { none; };
-{% if value.allow_transfer is defined %}
-    allow-transfer {
-    {% for key in value.allow_transfer %}
-    {{ key }};
-    {% endfor %}
-{% endif %}
-{% if value.allow_notify is defined %}
-    {% for key in value.allow_notify %}
-    {{ key }};
-    {% endfor %}
-{% endif %}
+    {% if value.allow_transfer is defined %}
+        allow-transfer {
+        {% for key in value.allow_transfer %}
+            {{ key }};
+        {% endfor %}
+        };
+    {% endif %}
+    {% if value.allow_notify is defined %}
+        {% for key in value.allow_notify %}
+            {{ key }};
+        {% endfor %}
+    {% endif %}
 {% elif value.type == 'slave' %}
     file "/var/named/slaves/{{ key | regex_replace('_', '.') }}.zone";
     masters { {{ value.master }}; };
@@ -50,3 +51,45 @@ zone "{{ key | regex_replace('_', '.') }}" {
 ###############
 {% endif %}
 
+
+{% if named_dynamic_zones is defined %}
+{% for (key, value) in named_dynamic_zones.iteritems() %}
+    zone "{{ key | regex_replace('_', '.') }}" {
+        type {{ value.type }};
+            {% if value.type == 'master' %}
+                file "/var/named/dynamic/{{ key | regex_replace('_', '.') }}.zone";
+                update-policy { grant rndc-key zonesub ANY; };
+                {% if value.allow_transfer is defined %}
+                    allow-transfer {
+                        {% for key in value.allow_transfer %}
+                            {{ key }};
+                        {% endfor %}
+                    };
+                {% endif %}
+            {% elif value.type == 'slave' %}
+                file "/var/named/slaves/{{ key | regex_replace('_', '.') }}.zone";
+                masters { {{ value.master }}; };
+            {% endif %}
+    };
+{% endfor %}
+{% endif %}
+
+{% if bind_dynamic_reverse_zones is defined %}
+{% for (key, value) in bind_dynamic_reverse_zones.iteritems() %}
+    zone "{{ key|reverse_lookup_zone }}" IN {
+        type {{ value.type }};
+            {% if value.type == 'master' %}
+              file "/var/named/dynamic/{{ key|reverse_lookup_zone }}";
+                update-policy { grant rndc-key zonesub ANY; };
+                {% if value.allow_transfer is defined %}
+                    allow-transfer {
+                        {% for key in value.allow_transfer %} {{ key }}; {% endfor %}
+                    };
+                {% endif %}
+            {% elif value.type == 'slave' %}
+                file "/var/named/slaves/{{ key|reverse_lookup_zone }}";
+                masters { {{ value.master }}; };
+            {% endif %}
+    };
+{% endfor %}
+{% endif %}

@@ -6,6 +6,15 @@
 // {{ ansible_managed }}
 //
 
+{% if named_create_rnd_key ==  true %}
+include "/etc/rndc.key";
+
+controls  {
+    inet 127.0.0.1 port 953 allow { 127.0.0.1; } keys { "rndc-key"; };
+};
+
+{% endif %}
+
 options {
     listen-on port {{ named_conf_listen_on_port }} {
 {% for interface in named_conf_listen_on_interface -%}

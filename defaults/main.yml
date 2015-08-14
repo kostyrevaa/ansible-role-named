@@ -17,6 +17,8 @@ named_monit_conf_directory: /etc/monit.d
 
 ### Base Config Options
 
+## Above Options Section
+named_create_rnd_key: false
 ## Options Section
 named_conf_listen_on_port: 53
 # Do not put "any" here, just IPs
