@@ -6,3 +6,6 @@ named_conf_logging_directory_perms: "0770"
 named_create_rnd_key: true
 
 bind_service_name: 'named-chroot'
+named_conf_logging_file_directory: /var/named/chroot/var/log/named
+
+
