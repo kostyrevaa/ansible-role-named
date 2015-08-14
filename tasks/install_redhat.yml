@@ -17,6 +17,6 @@
 
 - name: Install Service RedHat
   yum:
-    name='bind'
+    name='bind-chroot'
     state='present'
   tags: install

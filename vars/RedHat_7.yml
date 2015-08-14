@@ -5,4 +5,4 @@ named_config_mode: "0640"
 named_conf_logging_directory_perms: "0770"
 named_create_rnd_key: true
 
-bind_service_name: named
+bind_service_name: 'named-chroot'
