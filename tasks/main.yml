@@ -42,5 +42,6 @@
     - configure
 
 - include: local_facts.yml
+  when: named_create_local_facts
   tags:
     - gather_facts
