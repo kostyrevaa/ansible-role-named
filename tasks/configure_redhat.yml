@@ -16,7 +16,7 @@
     owner={{ named_user }}
     group={{ named_group }}
     mode={{ named_config_mode | default("0600") }}
-  when: ansible_os_family == "RedHat"
+  when: ansible_os_family == "RedHat" and named_create_included_conf
   notify: restart bind
 
 - name: Create zone Files - RedHat
@@ -80,3 +80,4 @@
 
 - name: start bind
   service: name={{ bind_service_name }} state=started enabled=yes
+  when: named_create_included_conf

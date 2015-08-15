@@ -20,6 +20,9 @@ named_monit_conf_directory: /etc/monit.d
 ## Above Options Section
 named_create_rnd_key: false
 
+## Should included.conf be created
+named_create_included_conf: true
+
 ## Should named facts be created
 named_create_local_facts: true
 
