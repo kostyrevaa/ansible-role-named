@@ -12,6 +12,7 @@
   tags:
     - install
     - configure
+    - named_conf
 
 - include: install_base.yml
   tags:

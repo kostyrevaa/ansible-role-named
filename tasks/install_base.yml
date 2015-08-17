@@ -14,7 +14,7 @@
     uid=25
     group='named'
     home={{ named_conf_directory }}
-    shell='/sbin/nologin'
+    shell={{ named_user_shell }}
     system='yes'
   when: named_travis_ci is not defined
   tags: install
@@ -51,6 +51,7 @@
     owner={{ named_user }}
     group={{ named_group }}
     state='directory'
+    mode="0770"
   tags: install
 
 - name: Create zone masters Directory
@@ -58,5 +59,6 @@
     path={{ named_conf_directory }}/masters
     owner={{ named_user }}
     group={{ named_group }}
+    mode={{ named_masters_directory_perms }}
     state='directory'
   tags: install

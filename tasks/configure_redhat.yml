@@ -8,6 +8,8 @@
     mode={{ named_config_mode | default("0600") }}
   when: ansible_os_family == "RedHat"
   notify: restart bind
+  tags:
+    - named_conf
 
 - name: Create included.conf File - RedHat
   template:
